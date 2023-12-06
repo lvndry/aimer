@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum CompanyPosition {
+  Founder
+  Recruiter
+  Freelance
+  NONE
+}
+
+enum JobState {
+  Closed
+  Open
+}
+
+model Skills {
+  id   Int    @id @default(autoincrement())
+  name String
+  jobs Job[]
+}
+
+model Creative {
+  id            Int             @id @default(autoincrement())
+  birthdate     DateTime        @db.Date()
+  email         String          @unique
+  firstName     String
+  lastName      String
+  username      String          @unique
+  // country id: https://unece.org/trade/cefact/unlocode-code-list-country-and-territory
+  country_code  String          @db.VarChar(5)
+  // city id (area)
+  city          String          @db.VarChar(80)
+  gender        String          @db.TinyText
+  website       String?         @db.VarChar(300)
+  insta_link    String?         @db.TinyText
+  tiktok_link   String?         @db.TinyText
+  dribble_link  String?         @db.TinyText
+  linkedin_link String?         @db.TinyText
+  job           Job[]
+  position      CompanyPosition
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Job {
+  id           Int      @id @default(autoincrement())
+  title        String   @db.TinyText
+  description  String   @db.Text()
+  country_code String   @db.TinyText
+  city         String   @db.TinyText
+  skills       Skills[]
+  is_remote    Boolean  @db.Bit(1)
+  state        JobState
+  employer_id  Int
+  employer     Creative @relation(fields: [employer_id], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([employer_id])
+}
